@@ -98,9 +98,11 @@ def build_dataset(
             "query": [],
             "input_ids": [],
         }
-        for example in examples['chosen']:
-            new_examples["query"].append(example)
-            new_examples["input_ids"].append(tokenizer.encode(example))
+        for chosen in examples["chosen"]:
+            tokenized_sample = tokenizer(chosen, truncation=True)
+            new_examples["query"].append(tokenized_sample)
+            new_examples["input_ids"].append(tokenizer.encode(tokenized_sample))
+
         return new_examples
 
     ds = train_dataset.map(
