@@ -39,7 +39,7 @@ class ScriptArguments:
     model_name: Optional[str] = field(default="", metadata={"help": "the model name"})
     tokenizer_name: Optional[str] = field(default="", metadata={"help": "the tokenizer name"})
     reward_model_name: Optional[str] = field(default="", metadata={"help": "the reward model name"})
-    dataset_name: Optional[str] = field(default="", metadata={"help": "the dataset name"})
+    dataset_name: Optional[str] = field(default="Anthropic/hh-rlhf", metadata={"help": "the dataset name"})
     log_with: Optional[str] = field(default=None, metadata={"help": "use 'wandb' to log with wandb"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
     max_length: Optional[int] = field(default=512, metadata={"help": "maximum length for input"})
@@ -98,12 +98,9 @@ def build_dataset(
             "query": [],
             "input_ids": [],
         }
-        for question in examples["question"]:
-            query = "Question: " + question + "\n\nAnswer: "
-            tokenized_question = tokenizer(query, truncation=True)
-            new_examples["query"].append(query)
-            new_examples["input_ids"].append(tokenized_question["input_ids"])
-
+        for example in examples['chosen']:
+            new_examples["query"].append(example)
+            new_examples["input_ids"].append(tokenizer.encode(example))
         return new_examples
 
     ds = train_dataset.map(
