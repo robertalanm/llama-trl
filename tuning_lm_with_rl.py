@@ -14,9 +14,28 @@ from transformers import (
     HfArgumentParser,
     pipeline
 )
+
+from typing import List
 import time
 import threading
 import requests
+
+from bittensor import logging as logger
+
+from .reward import (
+    Blacklist,
+    NSFWRewardModel,
+    OpenAssistantRewardModel,
+    ReciprocateRewardModel,
+    RelevanceRewardModel,
+    MockRewardModel,
+    DahoasRewardModel,
+    DirectPreferenceRewardModel,
+    TaskValidator,
+    DiversityRewardModel,
+    PromptRewardModel,
+    RewardModelType,
+)
 
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer, set_seed
 from trl.core import LengthSampler
@@ -220,51 +239,70 @@ if ppo_trainer.accelerator.num_processes == 1:
 # )
 
 
-reward_endpoint_index = 0
-# reward_endpoints = ['http://207.188.7.165:5007/reward']
-reward_endpoints = [
-                'http://207.188.7.165:5000/reward',
-                'http://207.188.7.165:5001/reward',
-                'http://207.188.7.165:5002/reward',
-                'http://207.188.7.165:5003/reward',
-                'http://207.188.7.165:5004/reward',
-                'http://207.188.7.165:5005/reward',
-                'http://207.188.7.165:5006/reward',
-                'http://207.188.7.165:5007/reward',
+dpo_weight: float = 0.3
+rlhf_weight: float = 0.4
+reciprocate_weight: float = 0.3
+dahoas_weight: float = 0
+prompt_based_weight: float = 0
+name = "augment"
+
+reward_weights = [
+            rlhf_weight,
+            reciprocate_weight,
+            dpo_weight,
         ]
 
-lock = threading.Lock()
+reward_functions = [
+    OpenAssistantRewardModel(device=device),
+    ReciprocateRewardModel(device=device),
+    DirectPreferenceRewardModel(device=device),
+]
 
-def get_reward_endpoint():
-    global reward_endpoint_index
-    with lock:
-        reward_endpoint_index = (reward_endpoint_index + 1) % len(reward_endpoints)
-        url = reward_endpoints[reward_endpoint_index]
-        # print("scoring url", url)
-        return url
-        
-def calculate_score(roles, messages, responses, timeout=60):
-    start_time = time.time()
-    if type(responses) == str:
-        responses = [responses]
+blacklist = (
+    Blacklist()
+)
 
-    params = {
-        "roles": roles,
-        "messages": messages,
-        "successful_completions": responses,
-    }
-    
-    response = requests.post(get_reward_endpoint(), json=params, timeout=timeout)
-    
-    try:
-        scores = response.json()["reward"]
-    except:
-        print("response", response.content)
+relevance_model = (
+    RelevanceRewardModel(device=device)
+)
 
-    total_time = time.time() - start_time
-    print("total time", total_time)
-    return scores
+diversity_model = (
+    DiversityRewardModel(device=device)
+)
 
+nsfw_model = (
+    NSFWRewardModel(device=device)
+)
+
+task_validator = (
+    TaskValidator()
+)
+
+masking_functions = [
+    blacklist,
+    task_validator,
+    relevance_model,
+    diversity_model,
+    nsfw_model
+]
+
+def compute_rewards(prompt: str, responses: List[str]) -> torch.FloatTensor:
+    name = "augment"
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Compute the rewards for the responses given the prompt.
+    rewards: torch.FloatTensor = torch.zeros(len(responses), dtype=torch.float32).to(device)
+    for weight_i, reward_fn_i in zip(reward_weights, reward_functions):
+        reward_i, reward_i_normalized = reward_fn_i.apply(prompt, responses, name)
+        rewards += weight_i * reward_i_normalized.to(device)
+        logger.trace(str(reward_fn_i.name), reward_i_normalized.tolist())
+
+    for masking_fn_i in masking_functions:
+        mask_i, mask_i_normalized = masking_fn_i.apply(prompt, responses, name)
+        rewards *= mask_i_normalized.to(device)  # includes diversity
+        logger.trace(str(masking_fn_i.name), mask_i_normalized.tolist())
+
+    logger.info(f"Final reward: {rewards.tolist()}")  # Log final reward
+    return rewards
 
 # We then define the arguments to pass to the `generate` function. These arguments
 # are passed to the `generate` function of the PPOTrainer, which is a wrapper around
@@ -294,11 +332,11 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     batch["response"] = tokenizer.batch_decode(response_tensors, skip_special_tokens=True)
 
     # Compute sentiment score
-    texts = [q + r for q, r in zip(batch["query"], batch["response"])]
+    # texts = [q + r for q, r in zip(batch["query"], batch["response"])]
     # reward_outputs = reward_model(texts, **rw_kwargs)
 
     # Compute reward
-    reward_outputs = calculate_score(['user'], batch["query"], batch["response"])
+    reward_outputs = compute_rewards(batch["query"], batch["response"])
     rewards = [torch.tensor(output - script_args.reward_baseline) for output in reward_outputs]
 
     # Run PPO step
