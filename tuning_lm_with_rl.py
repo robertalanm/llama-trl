@@ -14,6 +14,8 @@ from transformers import (
     HfArgumentParser,
     pipeline
 )
+import threading
+import requests
 
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer, set_seed
 from trl.core import LengthSampler
@@ -207,13 +209,56 @@ ppo_trainer = PPOTrainer(
 device = ppo_trainer.accelerator.device
 if ppo_trainer.accelerator.num_processes == 1:
     device = 0 if torch.cuda.is_available() else "cpu"  # to avoid a ` pipeline` bug
-reward_model = pipeline(
-    "text-classification",
-    model=reward_model_name,
-    device_map={"": current_device},
-    model_kwargs={"load_in_8bit": True},
-    tokenizer=tokenizer,
-)
+# reward_model = pipeline(
+#     "text-classification",
+#     model=reward_model_name,
+#     device_map={"": current_device},
+#     model_kwargs={"load_in_8bit": True},
+#     tokenizer=tokenizer,
+# )
+
+
+reward_endpoint_index = 0
+# reward_endpoints = ['http://207.188.7.165:5007/reward']
+reward_endpoints = [
+                'http://207.188.7.165:5000/reward',
+                'http://207.188.7.165:5001/reward',
+                'http://207.188.7.165:5002/reward',
+                'http://207.188.7.165:5003/reward',
+                'http://207.188.7.165:5004/reward',
+                'http://207.188.7.165:5005/reward',
+                'http://207.188.7.165:5006/reward',
+                'http://207.188.7.165:5007/reward',
+        ]
+
+lock = threading.Lock()
+
+def get_reward_endpoint():
+    global reward_endpoint_index
+    with lock:
+        reward_endpoint_index = (reward_endpoint_index + 1) % len(reward_endpoints)
+        url = reward_endpoints[reward_endpoint_index]
+        # print("scoring url", url)
+        return url
+        
+def calculate_score(roles, messages, responses, timeout=60):
+    if type(responses) == str:
+        responses = [responses]
+
+    params = {
+        "roles": roles,
+        "messages": messages,
+        "successful_completions": responses,
+    }
+    
+    response = requests.post(get_reward_endpoint(), json=params, timeout=timeout)
+    
+    try:
+        scores = response.json()["reward"]
+    except:
+        print("response", response.content)
+    return scores
+
 
 # We then define the arguments to pass to the `generate` function. These arguments
 # are passed to the `generate` function of the PPOTrainer, which is a wrapper around
@@ -243,8 +288,11 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
     # Compute sentiment score
     texts = [q + r for q, r in zip(batch["query"], batch["response"])]
-    reward_outputs = reward_model(texts, **rw_kwargs)
-    rewards = [torch.tensor(output[0]["score"] - script_args.reward_baseline) for output in reward_outputs]
+    # reward_outputs = reward_model(texts, **rw_kwargs)
+
+    # Compute reward
+    reward_outputs = calculate_score(['user'], batch["query"], batch["response"])
+    rewards = [torch.tensor(output - script_args.reward_baseline) for output in reward_outputs]
 
     # Run PPO step
     stats = ppo_trainer.step(question_tensors, response_tensors, rewards)
