@@ -9,3 +9,5 @@ tqdm
 sentencepiece
 bitsandbytes
 wandb
+torchmetrics
+bittensor
