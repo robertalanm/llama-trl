@@ -328,20 +328,16 @@ output_length_sampler = LengthSampler(output_min_length, output_max_length)
 for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     question_tensors = batch["input_ids"]
 
-    response_tensors = ppo_trainer.generate(
-        question_tensors,
-        return_prompt=False,
-        length_sampler=output_length_sampler,
-        **generation_kwargs,
-    )
+    # response_tensors = ppo_trainer.generate(
+    #     question_tensors,
+    #     return_prompt=False,
+    #     length_sampler=output_length_sampler,
+    #     **generation_kwargs,
+    # )
     batch['query'] = tokenizer.batch_decode(question_tensors, skip_special_tokens=True)
-    batch["response"] = tokenizer.batch_decode(response_tensors, skip_special_tokens=True)
+    # batch["response"] = tokenizer.batch_decode(response_tensors, skip_special_tokens=True)
 
-    # Compute sentiment score
-    # texts = [q + r for q, r in zip(batch["query"], batch["response"])]
-    # reward_outputs = reward_model(texts, **rw_kwargs)
-
-    # Compute reward
+    batch["response"] = ["testing" for _ in range(len(batch["query"]))]
 
     logger.info('batch["query"]', batch["query"])
     logger.info('batch["response"]', batch["response"])
@@ -356,10 +352,10 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
         else:
             rewards_pre.append(torch.tensor(-1.0))
     rewards = [torch.tensor(output - script_args.reward_baseline) for output in rewards_pre]
-
+    logger.info("rewards", rewards)
     # Run PPO step
-    stats = ppo_trainer.step(question_tensors, response_tensors, rewards)
-    ppo_trainer.log_stats(stats, batch, rewards)
+    # stats = ppo_trainer.step(question_tensors, response_tensors, rewards)
+    # ppo_trainer.log_stats(stats, batch, rewards)
 
-    if script_args.save_freq and epoch and epoch % script_args.save_freq == 0:
-        ppo_trainer.save_pretrained(script_args.output_dir + f"step_{epoch}")
+    # if script_args.save_freq and epoch and epoch % script_args.save_freq == 0:
+    #     ppo_trainer.save_pretrained(script_args.output_dir + f"step_{epoch}")
