@@ -37,6 +37,8 @@ from reward import (
     RewardModelType,
 )
 
+from pydantic import BaseModel
+
 from trl import AutoModelForCausalLMWithValueHead, PPOConfig, PPOTrainer, set_seed
 from trl.core import LengthSampler
 
@@ -46,6 +48,16 @@ DEFAULT_BOS_TOKEN = "</s>"
 DEFAULT_UNK_TOKEN = "</s>"
 
 tqdm.pandas()
+
+class RewardInput(BaseModel):
+    prompt: str
+    responses: List[str]
+
+
+class ResponseModel(BaseModel):
+    completion: str
+    is_success: bool
+
 
 
 @dataclass
@@ -336,7 +348,10 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     # reward_outputs = reward_model(texts, **rw_kwargs)
 
     # Compute reward
-    reward_outputs = compute_rewards(batch["query"], batch["response"])
+
+    prompt = RewardInput(prompt=batch["query"], responses=batch["response"])
+    responses = [ResponseModel(completion=response, is_success=True) for response in batch["response"]]
+    reward_outputs = compute_rewards(prompt, responses)
     rewards = [torch.tensor(output - script_args.reward_baseline) for output in reward_outputs]
 
     # Run PPO step
