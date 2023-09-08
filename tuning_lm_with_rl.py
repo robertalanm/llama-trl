@@ -42,7 +42,7 @@ class ScriptArguments:
     dataset_name: Optional[str] = field(default="Anthropic/hh-rlhf", metadata={"help": "the dataset name"})
     log_with: Optional[str] = field(default=None, metadata={"help": "use 'wandb' to log with wandb"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
-    max_length: Optional[int] = field(default=512, metadata={"help": "maximum length for input"})
+    max_length: Optional[int] = field(default=1024, metadata={"help": "maximum length for input"})
     output_max_length: Optional[int] = field(default=128, metadata={"help": "maximum length for generation"})
     mini_batch_size: Optional[int] = field(default=1, metadata={"help": "the PPO minibatch size"})
     batch_size: Optional[int] = field(default=32, metadata={"help": "the batch size"})
@@ -95,13 +95,12 @@ def build_dataset(
 
     def preprocess_function(examples):
         new_examples = {
-            "query": [],
+            # "query": [],
             "input_ids": [],
         }
         for chosen in examples["chosen"]:
-            print(chosen)
             tokenized_sample = tokenizer(chosen, truncation=True)
-            new_examples["query"].append(chosen)
+            # new_examples["query"].append(chosen)
             new_examples["input_ids"].append(tokenized_sample["input_ids"])
 
         return new_examples
@@ -284,6 +283,7 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
         length_sampler=output_length_sampler,
         **generation_kwargs,
     )
+    batch['query'] = tokenizer.batch_decode(question_tensors, skip_special_tokens=True)
     batch["response"] = tokenizer.batch_decode(response_tensors, skip_special_tokens=True)
 
     # Compute sentiment score
