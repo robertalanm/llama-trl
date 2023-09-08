@@ -100,7 +100,7 @@ def build_dataset(
         }
         for chosen in examples["chosen"]:
             tokenized_sample = tokenizer(chosen, truncation=True)
-            new_examples["query"].append(tokenized_sample)
+            new_examples["query"].append(chosen)
             new_examples["input_ids"].append(tokenizer.encode(tokenized_sample))
 
         return new_examples
