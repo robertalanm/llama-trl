@@ -14,6 +14,7 @@ from transformers import (
     HfArgumentParser,
     pipeline
 )
+import time
 import threading
 import requests
 
@@ -43,7 +44,7 @@ class ScriptArguments:
     log_with: Optional[str] = field(default=None, metadata={"help": "use 'wandb' to log with wandb"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
     max_length: Optional[int] = field(default=1024, metadata={"help": "maximum length for input"})
-    output_max_length: Optional[int] = field(default=128, metadata={"help": "maximum length for generation"})
+    output_max_length: Optional[int] = field(default=256, metadata={"help": "maximum length for generation"})
     mini_batch_size: Optional[int] = field(default=1, metadata={"help": "the PPO minibatch size"})
     batch_size: Optional[int] = field(default=32, metadata={"help": "the batch size"})
     ppo_epochs: Optional[int] = field(default=4, metadata={"help": "the number of ppo epochs"})
@@ -62,6 +63,7 @@ class ScriptArguments:
     output_dir: Optional[str] = field(default="./checkpoints/tuning_llama_rl/",
                                       metadata={"help": "n steps to save the model"})
     seed: Optional[int] = field(default=0, metadata={"help": "the seed"})
+    revision: Optional[str] = field(default="main", metadata={"help": "the git revision"})
 
 
 parser = HfArgumentParser(ScriptArguments)
@@ -146,7 +148,7 @@ rw_kwargs = {
 }
 
 if "decapoda" in script_args.model_name.lower():
-    tokenizer = LlamaTokenizer.from_pretrained(script_args.model_name)
+    tokenizer = LlamaTokenizer.from_pretrained(script_args.model_name, revision=script_args.revision)
     # required for llama
     tokenizer.add_special_tokens(
         {
@@ -157,7 +159,7 @@ if "decapoda" in script_args.model_name.lower():
         }
     )
 else:
-    tokenizer = AutoTokenizer.from_pretrained(script_args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(script_args.model_name, revision=script_args.revision)
     if getattr(tokenizer, "pad_token", None) is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -179,6 +181,7 @@ model = AutoModelForCausalLMWithValueHead.from_pretrained(
     load_in_8bit=True,
     device_map={"": current_device},
     peft_config=lora_config,
+    revision=script_args.revision,
 )
 
 optimizer = None
@@ -241,6 +244,7 @@ def get_reward_endpoint():
         return url
         
 def calculate_score(roles, messages, responses, timeout=60):
+    start_time = time.time()
     if type(responses) == str:
         responses = [responses]
 
@@ -256,6 +260,9 @@ def calculate_score(roles, messages, responses, timeout=60):
         scores = response.json()["reward"]
     except:
         print("response", response.content)
+
+    total_time = time.time() - start_time
+    print("total time", total_time)
     return scores
 
 
