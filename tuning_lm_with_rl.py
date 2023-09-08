@@ -348,10 +348,8 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
             prompt = RewardInput(prompt=prompt, responses=[response])
             responses = [ResponseModel(completion=response, is_success=True)]
 
-            logger.info("prompt", prompt)
-            logger.info("responses", responses)
-            
-            reward_outputs = compute_rewards(prompt, responses)
+
+            reward_outputs = compute_rewards(prompt.prompt, responses)
             rewards_pre.append(reward_outputs[0])
         else:
             rewards_pre.append(torch.tensor(-1.0))
