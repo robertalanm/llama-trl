@@ -22,7 +22,7 @@ import requests
 
 from bittensor import logging as logger
 
-from .reward import (
+from reward import (
     Blacklist,
     NSFWRewardModel,
     OpenAssistantRewardModel,
