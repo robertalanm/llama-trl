@@ -348,12 +348,13 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
     rewards_pre = []
     for prompt, response in zip(batch["query"], batch["response"]):
-        logger.info(f"Prompt: {prompt}")
-        logger.info(f"Response: {response}")
-        prompt = RewardInput(prompt=batch["query"], responses=batch["response"])
-        responses = [ResponseModel(completion=response, is_success=True) for response in batch["response"]]
-        reward_outputs = compute_rewards(prompt, responses)
-        rewards_pre.append(reward_outputs[0])
+        if response != "":
+            prompt = RewardInput(prompt=prompt, responses=[response])
+            responses = [ResponseModel(completion=response, is_success=True)]
+            reward_outputs = compute_rewards(prompt, responses)
+            rewards_pre.append(reward_outputs[0])
+        else:
+            rewards_pre.append(torch.tensor(-1.0))
     rewards = [torch.tensor(output - script_args.reward_baseline) for output in rewards_pre]
 
     # Run PPO step
