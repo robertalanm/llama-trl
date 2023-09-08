@@ -288,7 +288,7 @@ masking_functions = [
     blacklist,
     task_validator,
     relevance_model,
-    diversity_model,
+    # diversity_model,
     nsfw_model
 ]
 
@@ -337,7 +337,7 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     batch['query'] = tokenizer.batch_decode(question_tensors, skip_special_tokens=True)
     batch["response"] = tokenizer.batch_decode(response_tensors, skip_special_tokens=True)
 
-    batch["response"] = ["testing" for _ in range(len(batch["query"]))]
+    # batch["response"] = ["testing" for _ in range(len(batch["query"]))]
 
     # logger.info('batch["query"]', batch["query"])
     # logger.info('batch["response"]', batch["response"])
