@@ -71,7 +71,7 @@ class ScriptArguments:
     model_name: Optional[str] = field(default="", metadata={"help": "the model name"})
     tokenizer_name: Optional[str] = field(default="", metadata={"help": "the tokenizer name"})
     reward_model_name: Optional[str] = field(default="", metadata={"help": "the reward model name"})
-    dataset_name: Optional[str] = field(default="Anthropic/hh-rlhf", metadata={"help": "the dataset name"})
+    dataset_name: Optional[str] = field(default="robertmyers/targon", metadata={"help": "the dataset name"})
     log_with: Optional[str] = field(default=None, metadata={"help": "use 'wandb' to log with wandb"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
     max_length: Optional[int] = field(default=1024, metadata={"help": "maximum length for input"})
@@ -95,6 +95,7 @@ class ScriptArguments:
                                       metadata={"help": "n steps to save the model"})
     seed: Optional[int] = field(default=0, metadata={"help": "the seed"})
     revision: Optional[str] = field(default="main", metadata={"help": "the git revision"})
+    dataset_revision: Optional[str] = field(default="main", metadata={"help": "the dataset revision"})
 
 
 parser = HfArgumentParser(ScriptArguments)
@@ -122,7 +123,7 @@ def build_dataset(
             The dataloader for the dataset.
     """
 
-    train_dataset = load_dataset(dataset_name, split="train")
+    train_dataset = load_dataset(dataset_name, split="train", revision=script_args.dataset_revision)
     original_columns = train_dataset.column_names
     num_proc = 24
 
@@ -131,8 +132,8 @@ def build_dataset(
             # "query": [],
             "input_ids": [],
         }
-        for chosen in examples["chosen"]:
-            tokenized_sample = tokenizer(chosen, truncation=True)
+        for prompt in examples["prompt"]:
+            tokenized_sample = tokenizer(prompt, truncation=True)
             # new_examples["query"].append(chosen)
             new_examples["input_ids"].append(tokenized_sample["input_ids"])
 
@@ -242,13 +243,6 @@ ppo_trainer = PPOTrainer(
 device = ppo_trainer.accelerator.device
 if ppo_trainer.accelerator.num_processes == 1:
     device = 0 if torch.cuda.is_available() else "cpu"  # to avoid a ` pipeline` bug
-# reward_model = pipeline(
-#     "text-classification",
-#     model=reward_model_name,
-#     device_map={"": current_device},
-#     model_kwargs={"load_in_8bit": True},
-#     tokenizer=tokenizer,
-# )
 
 
 dpo_weight: float = 0.3
