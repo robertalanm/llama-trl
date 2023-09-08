@@ -339,14 +339,18 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
     batch["response"] = ["testing" for _ in range(len(batch["query"]))]
 
-    logger.info('batch["query"]', batch["query"])
-    logger.info('batch["response"]', batch["response"])
+    # logger.info('batch["query"]', batch["query"])
+    # logger.info('batch["response"]', batch["response"])
 
     rewards_pre = []
     for prompt, response in zip(batch["query"], batch["response"]):
         if response != "":
             prompt = RewardInput(prompt=prompt, responses=[response])
             responses = [ResponseModel(completion=response, is_success=True)]
+
+            logger.info("prompt", prompt)
+            logger.info("responses", responses)
+            
             reward_outputs = compute_rewards(prompt, responses)
             rewards_pre.append(reward_outputs[0])
         else:
