@@ -123,7 +123,7 @@ def build_dataset(
             The dataloader for the dataset.
     """
 
-    train_dataset = load_dataset(dataset_name, split="train", revision=script_args.dataset_revision)
+    train_dataset = load_dataset(dataset_name, split="train[:20%]", revision=script_args.dataset_revision)
     original_columns = train_dataset.column_names
     num_proc = 24
 
@@ -307,7 +307,9 @@ def compute_rewards(prompt: str, responses: List[str]) -> torch.FloatTensor:
         rewards *= mask_i_normalized.to(device)  # includes diversity
         logger.trace(str(masking_fn_i.name), mask_i_normalized.tolist())
 
+    
     logger.info(f"Final reward: {rewards.tolist()}")  # Log final reward
+    torch.cuda.empty_cache()
     return rewards
 
 # We then define the arguments to pass to the `generate` function. These arguments
@@ -361,3 +363,4 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
     if script_args.save_freq and epoch and epoch % script_args.save_freq == 0:
         ppo_trainer.save_pretrained(script_args.output_dir + f"step_{epoch}")
+    torch.cuda.empty_cache()
