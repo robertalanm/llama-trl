@@ -71,11 +71,11 @@ class ScriptArguments:
     model_name: Optional[str] = field(default="", metadata={"help": "the model name"})
     tokenizer_name: Optional[str] = field(default="", metadata={"help": "the tokenizer name"})
     reward_model_name: Optional[str] = field(default="", metadata={"help": "the reward model name"})
-    dataset_name: Optional[str] = field(default="robertmyers/targon", metadata={"help": "the dataset name"})
+    dataset_name: Optional[str] = field(default="robertmyers/gigatargon", metadata={"help": "the dataset name"})
     log_with: Optional[str] = field(default=None, metadata={"help": "use 'wandb' to log with wandb"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
-    max_length: Optional[int] = field(default=1024, metadata={"help": "maximum length for input"})
-    output_max_length: Optional[int] = field(default=256, metadata={"help": "maximum length for generation"})
+    max_length: Optional[int] = field(default=4096, metadata={"help": "maximum length for input"})
+    output_max_length: Optional[int] = field(default=512, metadata={"help": "maximum length for generation"})
     mini_batch_size: Optional[int] = field(default=1, metadata={"help": "the PPO minibatch size"})
     batch_size: Optional[int] = field(default=32, metadata={"help": "the batch size"})
     ppo_epochs: Optional[int] = field(default=4, metadata={"help": "the number of ppo epochs"})
@@ -93,7 +93,7 @@ class ScriptArguments:
     save_freq: Optional[int] = field(default=None, metadata={"help": "n steps to save the model"})
     output_dir: Optional[str] = field(default="./checkpoints/tuning_llama_rl/",
                                       metadata={"help": "n steps to save the model"})
-    seed: Optional[int] = field(default=0, metadata={"help": "the seed"})
+    seed: Optional[int] = field(default=7647541334212938474, metadata={"help": "the seed"})
     revision: Optional[str] = field(default="main", metadata={"help": "the git revision"})
     dataset_revision: Optional[str] = field(default="main", metadata={"help": "the dataset revision"})
 
