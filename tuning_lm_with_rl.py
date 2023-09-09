@@ -317,6 +317,7 @@ def compute_rewards(prompt: str, responses: List[str]) -> torch.FloatTensor:
 # the `generate` function of the trained model.
 generation_kwargs = {
     # "min_length": -1,
+    "temperature": 0.9,
     "top_k": 0.0,
     "top_p": 1.0,
     "do_sample": True,
