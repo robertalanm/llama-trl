@@ -37,7 +37,7 @@ class DirectPreferenceRewardModel(BaseRewardModel):
         self.tokenizer = AutoTokenizer.from_pretrained(DirectPreferenceRewardModel.reward_model_name)
         self.model = AutoModelForCausalLM.from_pretrained(DirectPreferenceRewardModel.reward_model_name,
                                                           trust_remote_code=True,
-                                                          load_in_8bit=True).to(self.device)
+                                                          torch_dtype=torch.float16).to(self.device)
 
     def reward_single(self, prompt: str, completion: str, name: str ,with_penalty=True) -> float:
         r""" Calculates a direct preference optimization (DPO) style reward for a completion,

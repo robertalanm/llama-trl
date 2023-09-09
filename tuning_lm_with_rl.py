@@ -123,7 +123,7 @@ def build_dataset(
             The dataloader for the dataset.
     """
 
-    train_dataset = load_dataset(dataset_name, split="train[:20%]", revision=script_args.dataset_revision)
+    train_dataset = load_dataset(dataset_name, split="train[:10%]", revision=script_args.dataset_revision)
     original_columns = train_dataset.column_names
     num_proc = 24
 
