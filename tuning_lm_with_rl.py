@@ -260,7 +260,7 @@ reward_weights = [
 
 reward_functions = [
     OpenAssistantRewardModel(device=device),
-    # ReciprocateRewardModel(device=device),
+    ReciprocateRewardModel(device=device),
     DirectPreferenceRewardModel(device=device),
 ]
 
@@ -288,7 +288,7 @@ masking_functions = [
     blacklist,
     task_validator,
     relevance_model,
-    # diversity_model,
+    diversity_model,
     nsfw_model
 ]
 
