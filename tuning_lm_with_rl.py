@@ -93,7 +93,7 @@ class ScriptArguments:
     save_freq: Optional[int] = field(default=None, metadata={"help": "n steps to save the model"})
     output_dir: Optional[str] = field(default="./checkpoints/tuning_llama_rl/",
                                       metadata={"help": "n steps to save the model"})
-    seed: Optional[int] = field(default=764754133421, metadata={"help": "the seed"})
+    seed: Optional[int] = field(default=42, metadata={"help": "the seed"})
     revision: Optional[str] = field(default="main", metadata={"help": "the git revision"})
     dataset_revision: Optional[str] = field(default="main", metadata={"help": "the dataset revision"})
 
