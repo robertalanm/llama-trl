@@ -357,7 +357,10 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
         else:
             rewards_pre.append(torch.tensor(-1.0))
     rewards = [torch.tensor(output - script_args.reward_baseline) for output in rewards_pre]
-    logger.info("rewards", rewards)
+
+    logger.info("reward", rewards_pre[0])
+    logger.info('batch["response"]', batch["response"][0])
+
     # Run PPO step
     stats = ppo_trainer.step(question_tensors, response_tensors, rewards)
     ppo_trainer.log_stats(stats, batch, rewards)
