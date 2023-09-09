@@ -254,13 +254,13 @@ name = "augment"
 
 reward_weights = [
             rlhf_weight,
-            reciprocate_weight,
+            # reciprocate_weight,
             dpo_weight,
         ]
 
 reward_functions = [
     OpenAssistantRewardModel(device=device),
-    ReciprocateRewardModel(device=device),
+    # ReciprocateRewardModel(device=device),
     DirectPreferenceRewardModel(device=device),
 ]
 
