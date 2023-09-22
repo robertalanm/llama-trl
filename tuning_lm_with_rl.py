@@ -123,7 +123,7 @@ def build_dataset(
             The dataloader for the dataset.
     """
 
-    train_dataset = load_dataset(dataset_name, split="train[:10%]", revision=script_args.dataset_revision)
+    train_dataset = load_dataset(dataset_name, split="train[:5%]", revision=script_args.dataset_revision)
     original_columns = train_dataset.column_names
     num_proc = 24
 
@@ -202,8 +202,8 @@ dataset = build_dataset(tokenizer, script_args.dataset_name)
 current_device = Accelerator().local_process_index
 
 lora_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
+    r=32,
+    lora_alpha=64,
     lora_dropout=0.05,
     bias="none",
     task_type="CAUSAL_LM",
@@ -317,9 +317,9 @@ def compute_rewards(prompt: str, responses: List[str]) -> torch.FloatTensor:
 # the `generate` function of the trained model.
 generation_kwargs = {
     # "min_length": -1,
-    "temperature": 0.9,
+    "temperature": 0.7,
     "top_k": 0.0,
-    "top_p": 1.0,
+    "top_p": 0.99,
     "do_sample": True,
     "pad_token_id": tokenizer.pad_token_id,
     "eos_token_id": 100_000,
