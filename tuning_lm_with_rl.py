@@ -202,9 +202,9 @@ dataset = build_dataset(tokenizer, script_args.dataset_name)
 current_device = Accelerator().local_process_index
 
 lora_config = LoraConfig(
-    r=32,
-    lora_alpha=64,
-    lora_dropout=0.05,
+    r=8,
+    lora_alpha=32,
+    lora_dropout=0.1,
     bias="none",
     task_type="CAUSAL_LM",
 )
@@ -264,33 +264,33 @@ reward_functions = [
     # DirectPreferenceRewardModel(device=device),
 ]
 
-blacklist = (
-    Blacklist()
-)
+# blacklist = (
+#     Blacklist()
+# )
 
-relevance_model = (
-    RelevanceRewardModel(device=device)
-)
+# relevance_model = (
+#     RelevanceRewardModel(device=device)
+# )
 
-diversity_model = (
-    DiversityRewardModel(device=device)
-)
+# diversity_model = (
+#     DiversityRewardModel(device=device)
+# )
 
-nsfw_model = (
-    NSFWRewardModel(device=device)
-)
+# nsfw_model = (
+#     NSFWRewardModel(device=device)
+# )
 
-task_validator = (
-    TaskValidator()
-)
+# task_validator = (
+#     TaskValidator()
+# )
 
-masking_functions = [
-    blacklist,
-    task_validator,
-    relevance_model,
-    diversity_model,
-    nsfw_model
-]
+# masking_functions = [
+#     blacklist,
+#     task_validator,
+#     relevance_model,
+#     diversity_model,
+#     nsfw_model
+# ]
 
 def compute_rewards(prompt: str, responses: List[str]) -> torch.FloatTensor:
     name = "augment"
@@ -302,10 +302,10 @@ def compute_rewards(prompt: str, responses: List[str]) -> torch.FloatTensor:
         rewards += weight_i * reward_i_normalized.to(device)
         logger.trace(str(reward_fn_i.name), reward_i_normalized.tolist())
 
-    for masking_fn_i in masking_functions:
-        mask_i, mask_i_normalized = masking_fn_i.apply(prompt, responses, name)
-        rewards *= mask_i_normalized.to(device)  # includes diversity
-        logger.trace(str(masking_fn_i.name), mask_i_normalized.tolist())
+    # for masking_fn_i in masking_functions:
+    #     mask_i, mask_i_normalized = masking_fn_i.apply(prompt, responses, name)
+    #     rewards *= mask_i_normalized.to(device)  # includes diversity
+    #     logger.trace(str(masking_fn_i.name), mask_i_normalized.tolist())
 
     
     logger.info(f"Final reward: {rewards.tolist()}")  # Log final reward
