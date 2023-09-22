@@ -245,7 +245,7 @@ if ppo_trainer.accelerator.num_processes == 1:
     device = 0 if torch.cuda.is_available() else "cpu"  # to avoid a ` pipeline` bug
 
 
-dpo_weight: float = 0.3
+dpo_weight: float = 1.0
 rlhf_weight: float = 0.4
 reciprocate_weight: float = 0.3
 dahoas_weight: float = 0
@@ -254,14 +254,14 @@ name = "augment"
 
 reward_weights = [
             rlhf_weight,
-            reciprocate_weight,
-            dpo_weight,
+            # reciprocate_weight,
+            # dpo_weight,
         ]
 
 reward_functions = [
     OpenAssistantRewardModel(device=device),
-    ReciprocateRewardModel(device=device),
-    DirectPreferenceRewardModel(device=device),
+    # ReciprocateRewardModel(device=device),
+    # DirectPreferenceRewardModel(device=device),
 ]
 
 blacklist = (
