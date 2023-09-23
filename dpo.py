@@ -22,6 +22,7 @@ from typing import Dict, Optional
 import torch
 from datasets import Dataset, load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, HfArgumentParser, TrainingArguments
+from accelerate import Accelerator, DistributedType
 
 from trl import DPOTrainer
 
@@ -113,8 +114,19 @@ def get_hh(split: str, sanity_check: bool = False, silent: bool = False, cache_d
 parser = HfArgumentParser(ScriptArguments)
 script_args = parser.parse_args_into_dataclasses()[0]
 
+current_device = Accelerator().local_process_index
+
+device = ppo_trainer.accelerator.device
+if ppo_trainer.accelerator.num_processes == 1:
+    device = 0 if torch.cuda.is_available() else "cpu"  # to avoid a ` pipeline` bug
+
+
 # 1. load a pretrained model
-model = AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path, revision=script_args.model_revision)
+model = AutoModelForCausalLM.from_pretrained(
+    script_args.model_name_or_path, 
+    revision=script_args.model_revision,
+    device_map={"": current_device},
+    )
 
 if script_args.ignore_bias_buffers:
     # torch distributed hack
@@ -122,7 +134,12 @@ if script_args.ignore_bias_buffers:
         name for name, buffer in model.named_buffers() if buffer.dtype == torch.bool
     ]
 
-model_ref = AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path)
+model_ref = AutoModelForCausalLM.from_pretrained(
+    'cerebras/btlm-3b-8k-base', 
+    revision='main',
+    device_map={"": current_device},
+    )
+
 
 tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
 if tokenizer.pad_token is None:
