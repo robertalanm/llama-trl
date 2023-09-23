@@ -14,6 +14,8 @@
 # limitations under the License.
 
 # 0. imports
+import os 
+
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
@@ -47,6 +49,7 @@ class ScriptArguments:
     max_target_length: Optional[int] = field(
         default=128, metadata={"help": "Only used for encoder decoder model. Max target of each sample's prompt"}
     )
+    output_dir: Optional[str] = field(default="./output/", metadata={"help": "output directory"})
     label_pad_token_id: Optional[int] = field(default=-100, metadata={"help": "label for non response tokens"})
     max_steps: Optional[int] = field(default=1000, metadata={"help": "max number of training steps"})
     # instrumentation
@@ -106,59 +109,63 @@ def get_hh(split: str, sanity_check: bool = False, silent: bool = False, cache_d
     return dataset.map(split_prompt_and_responses)
 
 
-if __name__ == "__main__":
-    parser = HfArgumentParser(ScriptArguments)
-    script_args = parser.parse_args_into_dataclasses()[0]
+# if __name__ == "__main__":
+parser = HfArgumentParser(ScriptArguments)
+script_args = parser.parse_args_into_dataclasses()[0]
 
-    # 1. load a pretrained model
-    model = AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path, revision=script_args.model_revision)
+# 1. load a pretrained model
+model = AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path, revision=script_args.model_revision)
 
-    if script_args.ignore_bias_buffers:
-        # torch distributed hack
-        model._ddp_params_and_buffers_to_ignore = [
-            name for name, buffer in model.named_buffers() if buffer.dtype == torch.bool
-        ]
+if script_args.ignore_bias_buffers:
+    # torch distributed hack
+    model._ddp_params_and_buffers_to_ignore = [
+        name for name, buffer in model.named_buffers() if buffer.dtype == torch.bool
+    ]
 
-    model_ref = AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path)
+model_ref = AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path)
 
-    tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
-    # 2. Load the Anthropic Helpful-Harmless dataset
-    train_dataset = get_hh("train", sanity_check=script_args.sanity_check)
+# 2. Load the Anthropic Helpful-Harmless dataset
+train_dataset = get_hh("train", sanity_check=script_args.sanity_check)
 
-    # 3. Load evaluation dataset
-    eval_dataset = get_hh("test", sanity_check=script_args.sanity_check)
+# 3. Load evaluation dataset
+eval_dataset = get_hh("test", sanity_check=script_args.sanity_check)
 
-    # 4. initialize training arguments:
-    training_args = TrainingArguments(
-        per_device_train_batch_size=script_args.per_device_train_batch_size,
-        max_steps=script_args.max_steps,
-        remove_unused_columns=False,
-        gradient_accumulation_steps=script_args.gradient_accumulation_steps,
-        learning_rate=script_args.learning_rate,
-        evaluation_strategy="steps",
-        logging_first_step=True,
-        logging_steps=10,  # match results in blog post
-        eval_steps=500,
-        output_dir="./test",
-        report_to=script_args.report_to,
-    )
+# 4. initialize training arguments:
+training_args = TrainingArguments(
+    per_device_train_batch_size=script_args.per_device_train_batch_size,
+    max_steps=script_args.max_steps,
+    remove_unused_columns=False,
+    gradient_accumulation_steps=script_args.gradient_accumulation_steps,
+    learning_rate=script_args.learning_rate,
+    evaluation_strategy="steps",
+    logging_first_step=True,
+    logging_steps=10,  # match results in blog post
+    eval_steps=500,
+    output_dir="./test",
+    report_to=script_args.report_to,
+)
 
-    # 5. initialize the DPO trainer
-    dpo_trainer = DPOTrainer(
-        model,
-        model_ref,
-        args=training_args,
-        beta=script_args.beta,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
-        tokenizer=tokenizer,
-        max_length=script_args.max_length,
-        max_target_length=script_args.max_target_length,
-        max_prompt_length=script_args.max_prompt_length,
-    )
+# 5. initialize the DPO trainer
+dpo_trainer = DPOTrainer(
+    model,
+    model_ref,
+    args=training_args,
+    beta=script_args.beta,
+    train_dataset=train_dataset,
+    eval_dataset=eval_dataset,
+    tokenizer=tokenizer,
+    max_length=script_args.max_length,
+    max_target_length=script_args.max_target_length,
+    max_prompt_length=script_args.max_prompt_length,
+)
 
-    # 6. train
-    dpo_trainer.train()
+# 6. train
+dpo_trainer.train()
+# dpo_trainer.save_model(script_args.output_dir)
+
+# output_dir = os.path.join(script_args.output_dir, "final_checkpoint")
+# dpo_trainer.model.save_pretrained(output_dir)
