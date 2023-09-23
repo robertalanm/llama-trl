@@ -18,6 +18,7 @@ import os
 
 from dataclasses import dataclass, field
 from typing import Dict, Optional
+from peft import LoraConfig
 
 import torch
 from datasets import Dataset, load_dataset
