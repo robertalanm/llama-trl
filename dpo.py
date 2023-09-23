@@ -116,10 +116,6 @@ script_args = parser.parse_args_into_dataclasses()[0]
 
 current_device = Accelerator().local_process_index
 
-device = ppo_trainer.accelerator.device
-if ppo_trainer.accelerator.num_processes == 1:
-    device = 0 if torch.cuda.is_available() else "cpu"  # to avoid a ` pipeline` bug
-
 
 # 1. load a pretrained model
 model = AutoModelForCausalLM.from_pretrained(
