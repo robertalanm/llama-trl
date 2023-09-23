@@ -116,7 +116,13 @@ script_args = parser.parse_args_into_dataclasses()[0]
 
 current_device = Accelerator().local_process_index
 
-
+lora_config = LoraConfig(
+    r=8,
+    lora_alpha=32,
+    lora_dropout=0.1,
+    bias="none",
+    task_type="CAUSAL_LM",
+)
 # 1. load a pretrained model
 model = AutoModelForCausalLM.from_pretrained(
     script_args.model_name_or_path, 
@@ -134,6 +140,8 @@ model_ref = AutoModelForCausalLM.from_pretrained(
     'cerebras/btlm-3b-8k-base', 
     revision='main',
     device_map={"": current_device},
+    peft_config=lora_config,
+    load_in_8bit=True,
     trust_remote_code=True
     )
 
