@@ -134,6 +134,7 @@ model_ref = AutoModelForCausalLM.from_pretrained(
     'cerebras/btlm-3b-8k-base', 
     revision='main',
     device_map={"": current_device},
+    trust_remote_code=True
     )
 
 
