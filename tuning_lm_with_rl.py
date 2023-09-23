@@ -98,7 +98,7 @@ class ScriptArguments:
     dataset_revision: Optional[str] = field(default="main", metadata={"help": "the dataset revision"})
 
 
-parser = HfArgumentParser(ScriptArguments)
+parser = HfArgumentParser(ScriptArguments)  
 script_args: ScriptArguments = parser.parse_args_into_dataclasses()[0]
 
 set_seed(script_args.seed)
