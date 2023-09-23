@@ -18,7 +18,7 @@ import os
 
 from dataclasses import dataclass, field
 from typing import Dict, Optional
-from peft import LoraConfig
+from peft import get_peft_config, get_peft_model, LoraConfig, TaskType
 
 import torch
 from datasets import Dataset, load_dataset
@@ -141,7 +141,6 @@ model_ref = AutoModelForCausalLM.from_pretrained(
     'cerebras/btlm-3b-8k-base', 
     revision='main',
     device_map={"": current_device},
-    peft_config=lora_config,
     load_in_8bit=True,
     trust_remote_code=True
     )
