@@ -7,6 +7,8 @@ import pandas as pd
 from reward.open_assistant import OpenAssistantRewardModel
 import wandb
 from tqdm import tqdm
+
+from typing import List
 # from accelerate import Accelerator
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
