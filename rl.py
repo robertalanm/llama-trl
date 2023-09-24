@@ -67,7 +67,7 @@ run = wandb.init(
     project="text-rl",
     # Track hyperparameters and run metadata
     config={
-        "learning_rate": e3-6,
+        "learning_rate": 3e-6,
         "epochs": 10,
         "n_episodes": n_episodes
     })
