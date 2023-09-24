@@ -28,8 +28,8 @@ model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torc
 model.to("cuda")
 
 class MyRLEnv(TextRLEnv):
-    def __init__(self, model, tokenizer, observation_input, max_length, compare_sample):
-        super().__init__(model, tokenizer, observation_input, max_length, compare_sample)
+    def __init__(self, model, tokenizer, observation_input, max_length, compare_sample, **kwargs):
+        super().__init__(model, tokenizer, observation_input, max_length, compare_sample, **kwargs)
         self.model = model
         self.tokenizer = tokenizer
         self.reward_model = OpenAssistantRewardModel("cuda")
