@@ -7,15 +7,15 @@ import pandas as pd
 from reward.open_assistant import OpenAssistantRewardModel
 import wandb
 from tqdm import tqdm
-from accelerate import Accelerator
+# from accelerate import Accelerator
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 
 checkpoint = "robertmyers/targon-7b"
 revision = "v1.1.8"
 
-accelerator = Accelerator()
-device = accelerator.device
+# accelerator = Accelerator()
+# device = accelerator.device
 
 # dataset
 df = pd.read_parquet("./data/aa.parquet")
@@ -27,7 +27,7 @@ print( df["prompt"])
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto")
 
-# model.to("cuda")
+model.to("cuda")
 
 class MyRLEnv(TextRLEnv):
     def __init__(self, model, tokenizer, observation_input, max_length, compare_sample, **kwargs):
@@ -60,7 +60,7 @@ actor = TextRLActor(env, model, tokenizer,
                     top_p=1.0,)
 agent = actor.agent_ppo(update_interval=10, minibatch_size=3000, epochs=10)
 
-env, actor, agent, observation_list, model = accelerator.prepare(env, actor, agent, observation_list, model)
+# env, actor, agent, observation_list, model = accelerator.prepare(env, actor, agent, observation_list, model)
 # print(observation_list[0]['input'])
 # print(actor.predict(observation_list[0]))
 
