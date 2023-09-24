@@ -14,14 +14,13 @@ revision = "v1.1.8"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto", device_map="auto")
 
-model = model.cuda()
 
 # dataset
 df = pd.read_parquet("./data/aa.parquet")
 
 observation_list = [{"input": prompt} for prompt in df["prompt"]][:100]
 
-
+print(observation_list)
 
 class MyRLEnv(TextRLEnv):
     def __init__(self):
