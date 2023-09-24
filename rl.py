@@ -36,7 +36,7 @@ class MyRLEnv(TextRLEnv):
         total_reward = []
         for p in predicted_list:
             print(p)
-            rewards = self.reward_model.get_rewards(input_item, p, "test")
+            rewards = self.reward_model.get_rewards(input_item, p[0], "test")
             total_reward.append(rewards)
         print(total_reward)
 
