@@ -66,15 +66,15 @@ for i in range(1, n_episodes + 1):
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
-        print(action)
-        print(reward)
-        print(pred)
         R += reward
         t += 1
         reset = t == max_episode_len
         agent.observe(obs, reward, done, reset)
         if done or reset:
+            print(pred['predicted_str'][0])
+            print(R)
             break
+    
     if i % 10 == 0:
         print('episode:', i, 'R:', R)
     if i % 50 == 0:
