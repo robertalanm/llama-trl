@@ -32,16 +32,76 @@ model.to("cuda")
 class MyRLEnv(TextRLEnv):
     def __init__(self, model, tokenizer, observation_input, max_length, compare_sample, **kwargs):
         super().__init__(model, tokenizer, observation_input, max_length, compare_sample, **kwargs)
+        self.dpo_weight: float = 0.3
+        self.rlhf_weight: float = 0.4
+        self.reciprocate_weight: float = 0.3
+
         self.model = model
         self.tokenizer = tokenizer
-        self.reward_model = OpenAssistantRewardModel("cuda")
+
+        self.reward_functions = [
+            OpenAssistantRewardModel(device=self.device),
+            ReciprocateRewardModel(device=self.device),
+            DirectPreferenceRewardModel(device=self.device),
+        ]
+
+        self.reward_weights = [
+            self.rlhf_weight,
+            self.reciprocate_weight,
+            self.dpo_weight,
+        ]
+
+
+        self.blacklist = (
+            Blacklist()
+        )
+
+        self.task_validator = (
+            TaskValidator()
+        )
+
+        self.relevance_model = (
+            RelevanceRewardModel(device=self.device)
+        )
+
+        # self.diversity_model = (
+        #     DiversityRewardModel(device=self.device)
+        # )
+
+        self.nsfw_model = (
+            NSFWRewardModel(device=self.device)
+        )
+
+        self.masking_functions = [
+            self.blacklist,
+            self.task_validator,
+            self.relevance_model,
+            # self.diversity_model,
+            self.nsfw_model
+        ]
         
+    def compute_rewards(self, prompt: str, responses: List[str]) -> torch.FloatTensor:
+        name = "augment"
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # Compute the rewards for the responses given the prompt.
+        rewards: torch.FloatTensor = torch.zeros(len(responses), dtype=torch.float32).to(self.device)
+        for weight_i, reward_fn_i in zip(self.reward_weights, self.reward_functions):
+            reward_i, reward_i_normalized = reward_fn_i.apply(prompt, responses, name)
+            rewards += weight_i * reward_i_normalized.to(self.device)
+
+        for masking_fn_i in self.masking_functions:
+            mask_i, mask_i_normalized = masking_fn_i.apply(prompt, responses, name)
+            rewards *= mask_i_normalized.to(self.device)  # includes diversity
+
+        return rewards
+
+
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         total_reward = []
         output = ""
 
-        rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
-
+        # rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
+        rewards = self.compute_rewards(input_item['input'], predicted_list)
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
