@@ -38,7 +38,7 @@ class MyRLEnv(TextRLEnv):
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
-env = TextRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
+env = MyRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
 actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
                     temperature=1.0,
@@ -58,7 +58,7 @@ for i in range(1, n_episodes + 1):
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
         print(reward)
-        R += reward[0]
+        R += reward
         t += 1
         reset = t == max_episode_len
         agent.observe(obs, reward, done, reset)
