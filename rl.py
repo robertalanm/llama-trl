@@ -21,7 +21,7 @@ observation_list = [{"input": prompt} for prompt in df["prompt"]][:100]
 print( df["prompt"])
 
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto", device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto")
 
 
 class MyRLEnv(TextRLEnv):
