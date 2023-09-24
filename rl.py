@@ -48,6 +48,8 @@ class MyRLEnv(TextRLEnv):
         return list(rewards.cpu())
 
 
+model, obervation_list = accelerator.prepare(model, observation_list)
+
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
 # env = MyRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
 env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=4)
@@ -58,7 +60,7 @@ actor = TextRLActor(env, model, tokenizer,
                     top_p=1.0,)
 agent = actor.agent_ppo(update_interval=10, minibatch_size=3000, epochs=10)
 
-env, actor, agent = accelerator.prepare(env, actor, agent)
+# env, actor, agent = accelerator.prepare(env, actor, agent)
 # print(observation_list[0]['input'])
 # print(actor.predict(observation_list[0]))
 
