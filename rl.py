@@ -41,7 +41,7 @@ class MyRLEnv(TextRLEnv):
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
-        return rewards
+        return rewards.item()[0]
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
