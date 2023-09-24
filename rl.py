@@ -56,6 +56,7 @@ for i in range(1, n_episodes + 1):
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
+        print(reward)
         R += reward
         t += 1
         reset = t == max_episode_len
