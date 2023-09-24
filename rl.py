@@ -35,7 +35,6 @@ class MyRLEnv(TextRLEnv):
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         total_reward = []
         output = ""
-        print('input_item', input_item)
         predicted_list = [p[0] for p in predicted_list if p != ""]
 
         rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
@@ -43,7 +42,7 @@ class MyRLEnv(TextRLEnv):
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
-        return rewards[0].item()
+        return rewards[-1].item()
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
@@ -63,7 +62,7 @@ max_episode_len = 200  # max sentence length
 
 for i in range(1, n_episodes + 1):
     obs = env.reset()
-    R = 0.01
+    R = 0
     t = 0
     while True:
         action = agent.act(obs)
