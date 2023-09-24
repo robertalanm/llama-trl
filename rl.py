@@ -52,14 +52,17 @@ revision = "v1.1.8"
 # device = accelerator.device
 
 # dataset
-dataset = load_dataset("robertmyers/gigatargon", split="train")
+# dataset = load_dataset("robertmyers/gigatargon", split="train")
+
+df = pd.read_parquet("./data/aa.parquet")
+
 
 # shuffle dataset
-dataset = dataset.shuffle()
+# dataset = dataset.shuffle()
 
 # df = pd.read_parquet("./data/aa.parquet")
 
-observation_list = [{"input": prompt} for prompt in dataset["prompt"]]
+observation_list = [{"input": prompt} for prompt in df["prompt"]]
 
 # print( observation_list)
 
