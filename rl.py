@@ -7,9 +7,9 @@ import pandas as pd
 from reward.open_assistant import OpenAssistantRewardModel
 import wandb
 from tqdm import tqdm
-import torch
 
 from typing import List
+import torch
 # from accelerate import Accelerator
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
@@ -82,19 +82,21 @@ class MyRLEnv(TextRLEnv):
             # self.diversity_model,
             self.nsfw_model
         ]
+
+        self.device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
     def compute_rewards(self, prompt: str, responses: List[str]) -> torch.FloatTensor:
         name = "augment"
-        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
         # Compute the rewards for the responses given the prompt.
-        rewards: torch.FloatTensor = torch.zeros(len(responses), dtype=torch.float32)
+        rewards: torch.FloatTensor = torch.zeros(len(responses), dtype=torch.float32).to(self.device)
         for weight_i, reward_fn_i in zip(self.reward_weights, self.reward_functions):
             reward_i, reward_i_normalized = reward_fn_i.apply(prompt, responses, name)
-            rewards += weight_i * reward_i_normalized
+            rewards += weight_i * reward_i_normalized.to(self.device)
 
         for masking_fn_i in self.masking_functions:
             mask_i, mask_i_normalized = masking_fn_i.apply(prompt, responses, name)
-            rewards *= mask_i_normalized  # includes diversity
+            rewards *= mask_i_normalized.to(self.device)  # includes diversity
 
         return rewards
 
