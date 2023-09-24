@@ -5,6 +5,8 @@ import logging
 import sys
 import pandas as pd
 from reward.open_assistant import OpenAssistantRewardModel
+import wandb
+from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 
@@ -16,7 +18,7 @@ revision = "v1.1.8"
 # dataset
 df = pd.read_parquet("./data/aa.parquet")
 
-observation_list = [{"input": prompt} for prompt in df["prompt"]][:100]
+observation_list = [{"input": prompt} for prompt in df["prompt"]]
 
 print( df["prompt"])
 
@@ -52,14 +54,27 @@ actor = TextRLActor(env, model, tokenizer,
                     temperature=1.0,
                     top_k=0,
                     top_p=1.0,)
-agent = actor.agent_ppo(update_interval=2, minibatch_size=8, epochs=10)
+agent = actor.agent_ppo(update_interval=10, minibatch_size=3000, epochs=10)
 # print(observation_list[0]['input'])
 # print(actor.predict(observation_list[0]))
 
-n_episodes = 1000
+n_episodes = 10000
 max_episode_len = 200  # max sentence length
 
-for i in range(1, n_episodes + 1):
+
+run = wandb.init(
+    # Set the project where this run will be logged
+    project="text-rl",
+    # Track hyperparameters and run metadata
+    config={
+        "learning_rate": e3-6,
+        "epochs": 10,
+        "n_episodes": n_episodes
+    })
+
+mean_reward = []
+
+for i in tqdm(range(1, n_episodes + 1)):
     obs = env.reset()
     R = 0
     t = 0
@@ -71,18 +86,37 @@ for i in range(1, n_episodes + 1):
         reset = t == max_episode_len
         agent.observe(obs, reward, done, reset)
         if done or reset:
-            print(pred['predicted_str'][0])
-            print(R)
+            mean_reward.append(R)
+            mr = sum(mean_reward) / len(mean_reward)
+            wandb.log({"reward": R, "mean_reward": mr})
+            wandb.Table(columns=["response", "score", "step"], data=[[pred['predicted_str'][0], R, i]])
             break
     
     if i % 10 == 0:
         print('episode:', i, 'R:', R)
     if i % 50 == 0:
         print('statistics:', agent.get_statistics())
-
-outdir = "./output"
-suffix = ""
-dirname = os.path.join(outdir, "{}{}".format(t, suffix))
-agent.save(dirname)
+        stats = agent.get_statistics()
+        statistics_dict = dict(statistics)
+        avg_value = statistics_dict['average_value']
+        average_entropy = statistics_dict['average_entropy']
+        average_value_loss = statistics_dict['average_value_loss']
+        average_policy_loss = statistics_dict['average_policy_loss']
+        n_updates = statistics_dict['n_updates']
+        explained_variance = statistics_dict['explained_variance']
+        wandb.log({
+            "avg_value": avg_value,
+            "average_entropy": average_entropy,
+            "average_value_loss": average_value_loss,
+            "average_policy_loss": average_policy_loss,
+            "n_updates": n_updates,
+            "explained_variance": explained_variance
+        })
+    
+    if i % 250 == 0:
+        outdir = "./output"
+        suffix = ""
+        dirname = os.path.join(outdir, "{}{}".format(t, suffix))
+        agent.save(dirname)
 
 print(actor.predict(observation_list[0]))
