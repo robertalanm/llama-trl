@@ -57,4 +57,4 @@ train_agent_with_evaluation(
 
 
 
-print(actor.predict(observaton_list[0]))
+print(actor.predict(observation_list[0]))
