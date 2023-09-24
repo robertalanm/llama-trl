@@ -36,7 +36,7 @@ def main(arg=None):
     print("Finish model dump.")
     print('==================')
     print('pushing to the hub')
-    model.push_to_hub(arg.get('repo_name') revision=arg.get('revision'))
+    model.push_to_hub(arg.get('repo_name'), revision=arg.get('revision'))
     tokenizer.push_to_hub(arg.get('repo_name'), revision=arg.get('revision'))
 
     print('✅ Complete!')
