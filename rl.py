@@ -35,7 +35,7 @@ class MyRLEnv(TextRLEnv):
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
-env = TextRLEnv(model, tokenizer, observation_input=observaton_list, max_length=256, compare_sample=2)
+env = TextRLEnv(model, tokenizer, observation_input=observation_list, max_length=256, compare_sample=2)
 actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
                     temperature=1.0,
