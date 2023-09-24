@@ -140,8 +140,8 @@ class MyRLEnv(TextRLEnv):
 
         prompt = RewardInput(prompt=input_item['input'], responses=predicted_list)
         responses = self.format_response(predicted_list)
-        print('prompt', prompt)
-        print('responses', responses)
+        # print('prompt', prompt)
+        # print('responses', responses)
         # rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
         rewards = self.compute_rewards(prompt.prompt, responses)
         
@@ -154,7 +154,7 @@ class MyRLEnv(TextRLEnv):
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
 # env = MyRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
-env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=4)
+env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=1)
 actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
                     temperature=1.0,
