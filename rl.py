@@ -18,7 +18,7 @@ df = pd.read_parquet("./data/aa.parquet")
 
 observation_list = [{"input": prompt} for prompt in df["prompt"]][:100]
 
-print(observation_list)
+print( df["prompt"])
 
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto", device_map="auto")
