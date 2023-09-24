@@ -41,8 +41,7 @@ actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
                     temperature=1.0,
                     top_k=0,
-                    top_p=1.0,
-                    repetition_penalty=2)
+                    top_p=1.0,)
 agent = actor.agent_ppo(update_interval=2, minibatch_size=2, epochs=10)
 print(actor.predict(observaton_list[0]))
 
