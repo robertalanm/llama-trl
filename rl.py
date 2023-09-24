@@ -143,7 +143,7 @@ class MyRLEnv(TextRLEnv):
         print('prompt', prompt)
         print('responses', responses)
         # rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
-        rewards = self.compute_rewards(prompt, responses)
+        rewards = self.compute_rewards(prompt.prompt, responses)
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
