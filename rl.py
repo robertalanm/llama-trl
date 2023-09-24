@@ -34,7 +34,9 @@ class MyRLEnv(TextRLEnv):
         
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         total_reward = []
-        output = "".join(predicted_list)
+        output = ""
+        predicted_list = [p[0] for p in predicted_list if p != ""]
+
         rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
 
         
@@ -65,6 +67,7 @@ for i in range(1, n_episodes + 1):
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
+        print(action)
         print(reward)
         R += reward
         t += 1
