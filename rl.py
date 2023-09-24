@@ -55,7 +55,7 @@ actor = TextRLActor(env, model, tokenizer,
                     top_k=0,
                     top_p=1.0,)
 agent = actor.agent_ppo(update_interval=2, minibatch_size=2, epochs=10)
-print(observation_list[0])
+print(observation_list[0]['input'])
 print(actor.predict(observation_list[0]))
 
 n_episodes = 1000
