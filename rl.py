@@ -24,6 +24,23 @@ from tqdm import tqdm
 from typing import List
 import torch
 # from accelerate import Accelerator
+from pydantic import BaseModel
+
+class RewardInput(BaseModel):
+    prompt: str
+    responses: List[str]
+
+app = FastAPI()
+
+class ResponseModel(BaseModel):
+    completion: str
+    is_success: bool
+
+
+class Item(BaseModel):
+    roles: List[str]
+    messages: List[str]
+    successful_completions: List[str]
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 
@@ -114,13 +131,18 @@ class MyRLEnv(TextRLEnv):
 
         return rewards
 
+    def format_response(self, responses: List[str]) -> List[ResponseModel]:
+        data = [ResponseModel(completion=r, is_success=True) for r in responses]
+        return data
 
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         total_reward = []
         output = ""
 
+        prompt = RewardInput(prompt=input_item['input'], responses=predicted_list)
+        responses = self.format_response(predicted_list)
         # rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
-        rewards = self.compute_rewards(input_item['input'], predicted_list)
+        rewards = self.compute_rewards(prompt, responses)
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
