@@ -82,8 +82,8 @@ class MyRLEnv(TextRLEnv):
 
         self.reward_weights = [
             self.rlhf_weight,
-            # self.reciprocate_weight,
-            # self.dpo_weight,
+            self.reciprocate_weight,
+            self.dpo_weight,
         ]
 
 
