@@ -7,13 +7,15 @@ import pandas as pd
 from reward.open_assistant import OpenAssistantRewardModel
 import wandb
 from tqdm import tqdm
+from accelerate import Accelerator
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 
 checkpoint = "robertmyers/targon-7b"
 revision = "v1.1.8"
 
-
+accelerator = Accelerator()
+device = accelerator.device
 
 # dataset
 df = pd.read_parquet("./data/aa.parquet")
@@ -55,6 +57,8 @@ actor = TextRLActor(env, model, tokenizer,
                     top_k=0,
                     top_p=1.0,)
 agent = actor.agent_ppo(update_interval=10, minibatch_size=3000, epochs=10)
+
+env, actor, agent = accelerator.prepare(env, actor, agent)
 # print(observation_list[0]['input'])
 # print(actor.predict(observation_list[0]))
 
