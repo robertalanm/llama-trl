@@ -177,7 +177,7 @@ agent = actor.agent_ppo(update_interval=2, minibatch_size=8, epochs=10)
 # print(actor.predict(observation_list[0]))
 
 n_episodes = 10000
-max_episode_len = 200  # max sentence length
+max_episode_len = 128  # max sentence length
 
 
 run = wandb.init(
