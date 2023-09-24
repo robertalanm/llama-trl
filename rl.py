@@ -41,7 +41,7 @@ class MyRLEnv(TextRLEnv):
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
-        return rewards[-1].item()
+        return list(rewards)
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
@@ -66,7 +66,7 @@ for i in range(1, n_episodes + 1):
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
-        R += reward
+        R += sum(reward)
         t += 1
         reset = t == max_episode_len
         agent.observe(obs, reward, done, reset)
