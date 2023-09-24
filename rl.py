@@ -164,13 +164,13 @@ class MyRLEnv(TextRLEnv):
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
 # env = MyRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
-env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=1)
+env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=2)
 actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
                     temperature=1.0,
                     top_k=0,
                     top_p=1.0,)
-agent = actor.agent_ppo(update_interval=10, minibatch_size=3000, epochs=10)
+agent = actor.agent_ppo(update_interval=2, minibatch_size=8, epochs=10)
 
 # env, actor, agent, observation_list, model = accelerator.prepare(env, actor, agent, observation_list, model)
 # print(observation_list[0]['input'])
@@ -192,6 +192,8 @@ run = wandb.init(
 
 mean_reward = []
 
+moving_avg_reward = 0
+
 for i in tqdm(range(1, n_episodes + 1)):
     obs = env.reset()
     R = 0
@@ -201,15 +203,21 @@ for i in tqdm(range(1, n_episodes + 1)):
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
-        R += sum(reward)
+        R += sum(reward) 
+        # sum of reward but normalized so that it is always between 0 and 1
+
+
         t += 1
         reset = t == max_episode_len
         agent.observe(obs, reward, done, reset)
         if done or reset:
+
             mean_reward.append(R)
             mr = sum(mean_reward) / len(mean_reward)
+            moving_avg_reward = 0.9 * moving_avg_reward + 0.1 * R
+            print(pred["predicted_str"])
             table_key.add_data(pred["predicted_str"], R, t)
-            wandb.log({"reward": R, "mean_reward": mr})
+            wandb.log({"reward": R, "mean_reward": mr, "moving_avg_reward": moving_avg_reward})
             break
     
     if i % 10 == 0:
