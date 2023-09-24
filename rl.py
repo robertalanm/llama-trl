@@ -17,7 +17,7 @@ model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torc
 model = model.cuda()
 
 # dataset
-df = pd.read_csv("./data/aa.parquet")
+df = pd.read_parquer("./data/aa.parquet")
 
 observation_list = [{"input": prompt} for prompt in df["prompt"]][:100]
 
