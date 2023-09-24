@@ -186,6 +186,8 @@ for i in tqdm(range(1, n_episodes + 1)):
     obs = env.reset()
     R = 0
     t = 0
+    table_key = wandb.Table(columns=["response", "score", "step"])
+
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
@@ -196,8 +198,7 @@ for i in tqdm(range(1, n_episodes + 1)):
         if done or reset:
             mean_reward.append(R)
             mr = sum(mean_reward) / len(mean_reward)
-            table_key = wandb.Table(columns=["response", "score", "step"], data=[[pred['predicted_str'][0], R, i]])
-
+            table_key.add_data(pred["predicted_str"], R, t)
             wandb.log({"reward": R, "mean_reward": mr, "table_key": table_key})
             break
     
