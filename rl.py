@@ -11,8 +11,6 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 checkpoint = "robertmyers/targon-7b"
 revision = "v1.1.8"
 
-tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto", device_map="auto")
 
 
 # dataset
@@ -21,6 +19,10 @@ df = pd.read_parquet("./data/aa.parquet")
 observation_list = [{"input": prompt} for prompt in df["prompt"]][:100]
 
 print(observation_list)
+
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto", device_map="auto")
+
 
 class MyRLEnv(TextRLEnv):
     def __init__(self):
