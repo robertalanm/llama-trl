@@ -84,16 +84,16 @@ class MyRLEnv(TextRLEnv):
         
     def compute_rewards(self, prompt: str, responses: List[str]) -> torch.FloatTensor:
         name = "augment"
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # Compute the rewards for the responses given the prompt.
-        rewards: torch.FloatTensor = torch.zeros(len(responses), dtype=torch.float32).to(self.device)
+        rewards: torch.FloatTensor = torch.zeros(len(responses), dtype=torch.float32)
         for weight_i, reward_fn_i in zip(self.reward_weights, self.reward_functions):
             reward_i, reward_i_normalized = reward_fn_i.apply(prompt, responses, name)
-            rewards += weight_i * reward_i_normalized.to(self.device)
+            rewards += weight_i * reward_i_normalized
 
         for masking_fn_i in self.masking_functions:
             mask_i, mask_i_normalized = masking_fn_i.apply(prompt, responses, name)
-            rewards *= mask_i_normalized.to(self.device)  # includes diversity
+            rewards *= mask_i_normalized  # includes diversity
 
         return rewards
 
