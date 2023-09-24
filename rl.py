@@ -33,14 +33,16 @@ class MyRLEnv(TextRLEnv):
         self.reward_model = OpenAssistantRewardModel("cuda")
         
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
-        print(input_item)
-        print(predicted_list)
-        p_list = [item['input'] for item in predicted_list]
-        rewards = self.reward_model.get_rewards(input_item, p_list, "test")
-        print(rewards)
+        total_reward = []
+        for p in predicted_list:
+            rewards = self.reward_model.get_rewards(input_item, p, "test")
+            total_reward.append(rewards)
+        print(total_reward)
+
+        
         if finish:
-            reward = [1]  # calculate reward score base on predicted_list
-        return reward
+            reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
+        return total_reward
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
@@ -59,13 +61,13 @@ max_episode_len = 200  # max sentence length
 
 for i in range(1, n_episodes + 1):
     obs = env.reset()
-    R = 0
+    R = 0.01
     t = 0
     while True:
         action = agent.act(obs)
         obs, reward, done, pred = env.step(action)
         print(reward)
-        R += reward
+        R += [r for r in reward]
         t += 1
         reset = t == max_episode_len
         agent.observe(obs, reward, done, reset)
