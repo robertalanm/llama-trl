@@ -30,7 +30,6 @@ class RewardInput(BaseModel):
     prompt: str
     responses: List[str]
 
-app = FastAPI()
 
 class ResponseModel(BaseModel):
     completion: str
