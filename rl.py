@@ -26,8 +26,8 @@ model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torc
 model.to("cuda")
 
 class MyRLEnv(TextRLEnv):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, observation_input, max_length, compare_sample):
+        super().__init__(observation_input, max_length, compare_sample)
         self.reward_model = OpenAssistantRewardModel("cuda")
 
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
