@@ -140,6 +140,8 @@ class MyRLEnv(TextRLEnv):
 
         prompt = RewardInput(prompt=input_item['input'], responses=predicted_list)
         responses = self.format_response(predicted_list)
+        print('prompt', prompt)
+        print('responses', responses)
         # rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
         rewards = self.compute_rewards(prompt, responses)
         
