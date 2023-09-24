@@ -27,11 +27,11 @@ model.to("cuda")
 
 class MyRLEnv(TextRLEnv):
     def __init__(self, model, tokenizer, observation_input, max_length, compare_sample):
-        super().__init__(observation_input, max_length, compare_sample)
+        super().__init__(model, tokenizer, observation_input, max_length, compare_sample)
         self.model = model
         self.tokenizer = tokenizer
         self.reward_model = OpenAssistantRewardModel("cuda")
-
+        
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         rewards = self.reward_model.get_rewards(input_item, predicted_list, "test")
         print(rewards)
@@ -41,6 +41,7 @@ class MyRLEnv(TextRLEnv):
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
+# env = MyRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
 env = MyRLEnv(model, tokenizer, observation_list, 2048, 2)
 actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
