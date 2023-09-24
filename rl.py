@@ -61,7 +61,7 @@ dataset = dataset.shuffle()
 
 observation_list = [{"input": prompt} for prompt in dataset["prompt"]]
 
-print( df["prompt"])
+print( observation_list)
 
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto")
