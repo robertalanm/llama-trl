@@ -33,6 +33,8 @@ class MyRLEnv(TextRLEnv):
         self.reward_model = OpenAssistantRewardModel("cuda")
         
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
+        print(input_item)
+        print(predicted_list)
         p_list = [item['input'] for item in predicted_list]
         rewards = self.reward_model.get_rewards(input_item, p_list, "test")
         print(rewards)
