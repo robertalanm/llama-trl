@@ -35,7 +35,7 @@ class MyRLEnv(TextRLEnv):
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         total_reward = []
         output = ""
-        rewards = self.reward_model.get_rewards(input_item['input'], p[-1], "test")
+        rewards = self.reward_model.get_rewards(input_item['input'], predicted_list, "test")
 
         
         if finish:
