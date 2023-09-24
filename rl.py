@@ -20,7 +20,7 @@ device = accelerator.device
 # dataset
 df = pd.read_parquet("./data/aa.parquet")
 
-observation_list = [{"input": prompt} for prompt in df["prompt"]].to(device)
+observation_list = [{"input": prompt} for prompt in df["prompt"]]
 
 print( df["prompt"])
 
@@ -60,7 +60,7 @@ actor = TextRLActor(env, model, tokenizer,
                     top_p=1.0,)
 agent = actor.agent_ppo(update_interval=10, minibatch_size=3000, epochs=10)
 
-env, actor, agent = accelerator.prepare(env, actor, agent)
+env, actor, agent, observation_list = accelerator.prepare(env, actor, agent, observation_list)
 # print(observation_list[0]['input'])
 # print(actor.predict(observation_list[0]))
 
