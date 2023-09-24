@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from transformers import AutoTokenizer, AutoModelForCausalLM, LlamaModelWithLMHead
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from textrl import TextRLEnv, TextRLActor
 
