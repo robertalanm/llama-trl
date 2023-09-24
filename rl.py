@@ -27,6 +27,7 @@ model.to("cuda")
 
 class MyRLEnv(TextRLEnv):
     def __init__(self):
+        super().__init__()
         self.reward_model = OpenAssistantRewardModel("cuda")
 
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
