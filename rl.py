@@ -4,7 +4,20 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import logging
 import sys
 import pandas as pd
-from reward.open_assistant import OpenAssistantRewardModel
+from reward import (
+    Blacklist,
+    NSFWRewardModel,
+    OpenAssistantRewardModel,
+    ReciprocateRewardModel,
+    RelevanceRewardModel,
+    MockRewardModel,
+    DahoasRewardModel,
+    DirectPreferenceRewardModel,
+    TaskValidator,
+    DiversityRewardModel,
+    PromptRewardModel,
+    RewardModelType,
+)
 import wandb
 from tqdm import tqdm
 
