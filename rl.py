@@ -4,6 +4,7 @@ from textrl import TextRLEnv, TextRLActor, train_agent_with_evaluation
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import logging
 import sys
+from datasets import load_dataset
 import pandas as pd
 from reward import (
     Blacklist,
@@ -51,9 +52,14 @@ revision = "v1.1.8"
 # device = accelerator.device
 
 # dataset
-df = pd.read_parquet("./data/aa.parquet")
+dataset = load_dataset("robertmyers/gigatargon", split="train")
 
-observation_list = [{"input": prompt} for prompt in df["prompt"]]
+# shuffle dataset
+dataset = dataset.shuffle()
+
+# df = pd.read_parquet("./data/aa.parquet")
+
+observation_list = [{"input": prompt} for prompt in dataset["prompt"]]
 
 print( df["prompt"])
 
