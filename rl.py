@@ -196,8 +196,9 @@ for i in tqdm(range(1, n_episodes + 1)):
         if done or reset:
             mean_reward.append(R)
             mr = sum(mean_reward) / len(mean_reward)
-            wandb.log({"reward": R, "mean_reward": mr})
-            wandb.Table(columns=["response", "score", "step"], data=[[pred['predicted_str'][0], R, i]])
+            table_key = wandb.Table(columns=["response", "score", "step"], data=[[pred['predicted_str'][0], R, i]])
+
+            wandb.log({"reward": R, "mean_reward": mr, "table_key": table_key})
             break
     
     if i % 10 == 0:
@@ -205,7 +206,7 @@ for i in tqdm(range(1, n_episodes + 1)):
     if i % 50 == 0:
         print('statistics:', agent.get_statistics())
         stats = agent.get_statistics()
-        statistics_dict = dict(statistics)
+        statistics_dict = dict(stats)
         avg_value = statistics_dict['average_value']
         average_entropy = statistics_dict['average_entropy']
         average_value_loss = statistics_dict['average_value_loss']
@@ -221,7 +222,7 @@ for i in tqdm(range(1, n_episodes + 1)):
             "explained_variance": explained_variance
         })
     
-    if i % 250 == 0:
+    if i % 10 == 0:
         outdir = "./output"
         suffix = ""
         dirname = os.path.join(outdir, "{}{}".format(t, suffix))
