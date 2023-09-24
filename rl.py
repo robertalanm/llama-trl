@@ -34,16 +34,13 @@ class MyRLEnv(TextRLEnv):
         
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
         total_reward = []
-        for p in predicted_list:
-            print(p)
-            rewards = self.reward_model.get_rewards(input_item['input'], p[0], "test")
-            total_reward.append(rewards)
-        print(total_reward)
+        output = ""
+        rewards = self.reward_model.get_rewards(input_item['input'], p[-1], "test")
 
         
         if finish:
             reward = [1] * len(predicted_list)  # calculate reward score base on predicted_list
-        return total_reward
+        return rewards
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
