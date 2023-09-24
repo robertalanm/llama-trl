@@ -164,7 +164,7 @@ class MyRLEnv(TextRLEnv):
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
 # env = MyRLEnv(model, tokenizer, observation_input=observation_list, max_length=2048, compare_sample=2)
-env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=2)
+env = MyRLEnv(model, tokenizer, observation_list, 2048, 1, unfreeze_layer_from_past=1)
 actor = TextRLActor(env, model, tokenizer,
                     act_deterministically=False,
                     temperature=1.0,
