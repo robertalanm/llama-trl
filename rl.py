@@ -30,7 +30,8 @@ class MyRLEnv(TextRLEnv):
         self.reward_model = OpenAssistantRewardModel("cuda")
 
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
-        rewards = self.reward_model.get_rewards(input_item, predicted_list, "test")[0]
+        rewards = self.reward_model.get_rewards(input_item, predicted_list, "test")
+        print(rewards)
         if finish:
             reward = [1]  # calculate reward score base on predicted_list
         return reward
