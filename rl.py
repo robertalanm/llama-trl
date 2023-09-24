@@ -80,6 +80,9 @@ for i in range(1, n_episodes + 1):
     if i % 50 == 0:
         print('statistics:', agent.get_statistics())
 
-
+outdir = "./output"
+suffix = ""
+dirname = os.path.join(outdir, "{}{}".format(t, suffix))
+agent.save(dirname)
 
 print(actor.predict(observation_list[0]))
