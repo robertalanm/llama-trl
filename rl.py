@@ -35,6 +35,9 @@ model.to("cuda")
 class MyRLEnv(TextRLEnv):
     def __init__(self, model, tokenizer, observation_input, max_length, compare_sample, **kwargs):
         super().__init__(model, tokenizer, observation_input, max_length, compare_sample, **kwargs)
+        self.device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        
         self.dpo_weight: float = 0.3
         self.rlhf_weight: float = 0.4
         self.reciprocate_weight: float = 0.3
@@ -82,8 +85,6 @@ class MyRLEnv(TextRLEnv):
             # self.diversity_model,
             self.nsfw_model
         ]
-
-        self.device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
     def compute_rewards(self, prompt: str, responses: List[str]) -> torch.FloatTensor:
         name = "augment"
