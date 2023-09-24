@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from transformers import AutoTokenizer, AutoModelWithLMHead, LlamaModelWithLMHead
+from transformers import AutoTokenizer, AutoModelForCausalLM, LlamaModelWithLMHead
 
 from textrl import TextRLEnv, TextRLActor
 
@@ -18,7 +18,7 @@ def main(arg=None):
     arg = parse_dump_args(sys.argv[1:]) if arg is None else parse_dump_args(arg)
 
 
-    model = LlamaModelWithLMHead.from_pretrained(arg.get('model'))
+    model = AutoModelForCausalLM.from_pretrained(arg.get('model'))
     tokenizer = AutoTokenizer.from_pretrained(arg.get('model'))
 
     env = TextRLEnv(model, tokenizer, observation_input=[{'input':'dummy'}])

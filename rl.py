@@ -69,7 +69,9 @@ observation_list = [{"input": prompt} for prompt in df["prompt"]]
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto")
 
-model.to("cuda")
+# model.to("cuda")
+
+mock = True
 
 class MyRLEnv(TextRLEnv):
     def __init__(self, model, tokenizer, observation_input, max_length, compare_sample, **kwargs):
@@ -77,17 +79,22 @@ class MyRLEnv(TextRLEnv):
         self.device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         
-        self.dpo_weight: float = 0.3
-        self.rlhf_weight: float = 0.4
-        self.reciprocate_weight: float = 0.3
+        self.dpo_weight: float = 0.3 if not mock else 0.0
+        self.rlhf_weight: float = 0.4 if not mock else 0.0
+        self.reciprocate_weight: float = 0.3 if not mock else 0.0
 
         self.model = model
         self.tokenizer = tokenizer
 
         self.reward_functions = [
-            OpenAssistantRewardModel(device=self.device),
-            ReciprocateRewardModel(device=self.device),
-            DirectPreferenceRewardModel(device=self.device),
+            OpenAssistantRewardModel(device=self.device)
+            if self.config.reward.rlhf_weight > 0
+            else MockRewardModel(RewardModelType.rlhf.value),
+            ReciprocateRewardModel(device=self.device)
+            if self.config.reward.reciprocate_weight > 0,
+            DirectPreferenceRewardModel(device=self.device)
+            if self.config.reward.dpo_weight > 0
+            else MockRewardModel(RewardModelType.dpo.value),
         ]
 
         self.reward_weights = [
