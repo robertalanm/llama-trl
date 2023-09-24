@@ -23,6 +23,7 @@ print( df["prompt"])
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torch_dtype="auto")
 
+model.to("cuda")
 
 class MyRLEnv(TextRLEnv):
     def __init__(self):
