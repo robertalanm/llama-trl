@@ -25,7 +25,7 @@ from tqdm import tqdm
 
 from typing import List
 import torch
-# from accelerate import Accelerator
+from accelerate import Accelerator
 from pydantic import BaseModel
 
 class RewardInput(BaseModel):
@@ -48,8 +48,8 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 checkpoint = "robertmyers/targon-7b"
 revision = "v1.1.8"
 
-# accelerator = Accelerator()
-# device = accelerator.device
+accelerator = Accelerator()
+device = accelerator.device
 
 # dataset
 # dataset = load_dataset("robertmyers/gigatargon", split="train")
@@ -160,6 +160,7 @@ class MyRLEnv(TextRLEnv):
         return list(rewards.cpu())
 
 
+model, observation_list = accelerator.prepare(model, observation_list)
 
 
 # observaton_list = [{"input":"explain how attention work in seq2seq model"}]
