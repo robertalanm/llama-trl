@@ -199,7 +199,7 @@ for i in tqdm(range(1, n_episodes + 1)):
             mean_reward.append(R)
             mr = sum(mean_reward) / len(mean_reward)
             table_key.add_data(pred["predicted_str"], R, t)
-            wandb.log({"reward": R, "mean_reward": mr, "table_key": table_key})
+            wandb.log({"reward": R, "mean_reward": mr})
             break
     
     if i % 10 == 0:
@@ -220,7 +220,8 @@ for i in tqdm(range(1, n_episodes + 1)):
             "average_value_loss": average_value_loss,
             "average_policy_loss": average_policy_loss,
             "n_updates": n_updates,
-            "explained_variance": explained_variance
+            "explained_variance": explained_variance,
+            "table_key": table_key
         })
     
     if i % 10 == 0:
