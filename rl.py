@@ -30,7 +30,7 @@ class MyRLEnv(TextRLEnv):
         self.reward_model = OpenAssistantRewardModel("cuda")
 
     def get_reward(self, input_item, predicted_list, finish):  # predicted will be the list of predicted token
-        self.reward_model.get_rewards(input_item, predicted_list, "test")
+        rewards = self.reward_model.get_rewards(input_item, predicted_list, "test")
         if finish:
             reward = [1]  # calculate reward score base on predicted_list
         return reward
@@ -46,15 +46,26 @@ actor = TextRLActor(env, model, tokenizer,
 agent = actor.agent_ppo(update_interval=2, minibatch_size=2, epochs=10)
 print(actor.predict(observation_list[0]))
 
-train_agent_with_evaluation(
-    agent,
-    env,
-    steps=100,
-    eval_n_steps=None,
-    eval_n_episodes=1,
-    eval_interval=2,
-    outdir='bloom—test',
-)
+n_episodes = 1000
+max_episode_len = 200  # max sentence length
+
+for i in range(1, n_episodes + 1):
+    obs = env.reset()
+    R = 0
+    t = 0
+    while True:
+        action = agent.act(obs)
+        obs, reward, done, pred = env.step(action)
+        R += reward
+        t += 1
+        reset = t == max_episode_len
+        agent.observe(obs, reward, done, reset)
+        if done or reset:
+            break
+    if i % 10 == 0:
+        print('episode:', i, 'R:', R)
+    if i % 50 == 0:
+        print('statistics:', agent.get_statistics())
 
 
 
