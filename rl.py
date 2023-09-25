@@ -45,8 +45,8 @@ class Item(BaseModel):
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='')
 
-checkpoint = "robertmyers/targon-7b"
-revision = "v1.1.8"
+checkpoint = "stabilityai/StableBeluga-13B"
+revision = "main"
 
 accelerator = Accelerator()
 device = accelerator.device
@@ -224,7 +224,7 @@ for i in tqdm(range(1, n_episodes + 1)):
             mr = sum(mean_reward) / len(mean_reward)
             moving_avg_reward = 0.9 * moving_avg_reward + 0.1 * R
             print(pred["predicted_str"])
-            table_key.add_data(pred["predicted_str"], R, t)
+            table_key.add_data(pred["predicted_str"], R, i)
             wandb.log({"reward": R, "mean_reward": mr, "moving_avg_reward": moving_avg_reward})
             break
     
@@ -253,7 +253,7 @@ for i in tqdm(range(1, n_episodes + 1)):
     if i % 100 == 0:
         outdir = "./output"
         suffix = ""
-        dirname = os.path.join(outdir, "{}{}".format(t, suffix))
+        dirname = os.path.join(outdir, "{}{}".format(i, suffix))
         agent.save(dirname)
 
 print(actor.predict(observation_list[0]))
