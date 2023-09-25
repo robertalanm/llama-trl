@@ -88,13 +88,13 @@ class MyRLEnv(TextRLEnv):
 
         self.reward_functions = [
             OpenAssistantRewardModel(device=self.device)
-            if self.config.reward.rlhf_weight > 0
+            if self.rlhf_weight > 0
             else MockRewardModel(RewardModelType.rlhf.value),
             ReciprocateRewardModel(device=self.device)
-            if self.config.reward.reciprocate_weight > 0
+            if self.reciprocate_weight > 0
             else MockRewardModel(RewardModelType.reciprocate.value),
             DirectPreferenceRewardModel(device=self.device)
-            if self.config.reward.dpo_weight > 0
+            if self.dpo_weight > 0
             else MockRewardModel(RewardModelType.dpo.value),
         ]
 
