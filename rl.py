@@ -71,7 +71,7 @@ model = AutoModelForCausalLM.from_pretrained(checkpoint, revision=revision, torc
 
 # model.to("cuda")
 
-mock = True
+mock = False
 
 class MyRLEnv(TextRLEnv):
     def __init__(self, model, tokenizer, observation_input, max_length, compare_sample, **kwargs):
